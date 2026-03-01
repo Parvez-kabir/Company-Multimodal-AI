@@ -1,0 +1,120 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Betopia AI | Professional Multimodal</title>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.2/css/all.min.css">
+    <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@300;500;700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="/static/stylemultimodel.css">
+</head>
+<body>
+    <div class="pro-container">
+        <aside class="pro-sidebar">
+            <div class="logo">B</div>
+            <nav class="pro-nav">
+                <i class="fas fa-home active"></i>
+                <i class="fas fa-file-pdf" id="pdfIcon"></i>
+                <i class="fas fa-history"></i>
+                <i class="fas fa-cog"></i>
+            </nav>
+        </aside>
+
+        <main class="pro-content">
+            <header class="pro-header">
+                <div>
+                    <h1>Betopia Multimodal AI</h1>
+                    <p class="status-text">Web & Document Intelligence Active</p>
+                </div>
+                <div class="header-actions">
+                    <span class="sync-status">Synced</span>
+                </div>
+            </header>
+
+            <div class="chat-area" id="chatBox">
+                <div class="msg ai-msg">
+                    Welcome. I've indexed <b>BetopiaGroup.com</b>. You can also upload PDFs using the paperclip icon.
+                </div>
+            </div>
+
+            <div class="input-container">
+                <div class="input-bar glass">
+                    <input type="file" id="pdfFile" accept=".pdf" style="display:none;">
+                    <button class="icon-btn" onclick="document.getElementById('pdfFile').click()" title="Upload PDF">
+                        <i class="fas fa-paperclip"></i>
+                    </button>
+                    <input type="text" id="userInput" placeholder="Ask anything...">
+                    <button id="voiceBtn" class="icon-btn" title="Voice Mode">
+                        <i class="fas fa-microphone"></i>
+                    </button>
+                    <button id="sendBtn" class="send-btn">
+                        <i class="fas fa-arrow-up"></i>
+                    </button>
+                </div>
+            </div>
+        </main>
+    </div>
+
+    <script>
+        const chatBox = document.getElementById('chatBox');
+        const userInput = document.getElementById('userInput');
+        const pdfFile = document.getElementById('pdfFile');
+
+        function speak(text) {
+            window.speechSynthesis.cancel();
+            const u = new SpeechSynthesisUtterance(text);
+            u.lang = 'en-US';
+            window.speechSynthesis.speak(u);
+        }
+
+        function append(sender, text) {
+            const d = document.createElement('div');
+            d.className = `msg ${sender === 'You' ? 'user-msg' : 'ai-msg'} animate-slide`;
+            d.innerHTML = text;
+            chatBox.appendChild(d);
+            chatBox.scrollTop = chatBox.scrollHeight;
+        }
+
+        async function ask(query) {
+            if(!query.trim()) return;
+            append('You', query);
+            userInput.value = '';
+            
+            const fd = new FormData();
+            fd.append('question', query);
+            const res = await fetch('/ask', {method:'POST', body:fd});
+            const data = await res.json();
+            append('AI', data.answer);
+            speak(data.answer);
+        }
+
+        pdfFile.addEventListener('change', async () => {
+            const file = pdfFile.files[0];
+            if(!file) return;
+            append('You', `Uploading: <b>${file.name}</b>`);
+            const fd = new FormData();
+            fd.append('file', file);
+            const res = await fetch('/upload_pdf', {method:'POST', body:fd});
+            const data = await res.json();
+            append('AI', data.answer);
+            speak(data.answer);
+        });
+
+        // Speech Logic
+        const Speech = window.SpeechRecognition || window.webkitSpeechRecognition;
+        if(Speech){
+            const rec = new Speech();
+            document.getElementById('voiceBtn').onclick = () => {
+                rec.start();
+                document.getElementById('voiceBtn').style.color = '#ff4757';
+            };
+            rec.onresult = (e) => {
+                document.getElementById('voiceBtn').style.color = '';
+                ask(e.results[0][0].transcript);
+            };
+        }
+
+        document.getElementById('sendBtn').onclick = () => ask(userInput.value);
+        userInput.onkeypress = (e) => { if(e.key === 'Enter') ask(userInput.value); };
+    </script>
+</body>
+</html>

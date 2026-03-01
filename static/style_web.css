@@ -1,0 +1,129 @@
+:root {
+    --bg-dark: #050505;
+    --sidebar-bg: #111111;
+    --accent-color: #00f2ff; /* Neon Blue */
+    --text-main: #e0e0e0;
+    --chat-bubble-ai: #1a1a1a;
+}
+
+* { margin: 0; padding: 0; box-sizing: border-box; font-family: 'Inter', sans-serif; }
+
+body {
+    background-color: var(--bg-dark);
+    height: 100vh;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+}
+
+.main-wrapper {
+    width: 900px;
+    height: 600px;
+    display: flex;
+    background: #0d0d0d;
+    border: 1px solid #333;
+    border-radius: 20px;
+    overflow: hidden;
+    box-shadow: 0 0 30px rgba(0, 242, 255, 0.1);
+}
+
+/* Sidebar Styling */
+.sidebar {
+    width: 250px;
+    background: var(--sidebar-bg);
+    padding: 30px 20px;
+    display: flex;
+    flex-direction: column;
+    border-right: 1px solid #222;
+}
+
+.logo-section { margin-bottom: 50px; text-align: center; }
+.logo-icon { font-size: 40px; color: var(--accent-color); margin-bottom: 10px; }
+.logo-section h2 { color: white; font-size: 18px; letter-spacing: 2px; }
+.logo-section span { color: var(--accent-color); }
+
+.nav-links { flex-grow: 1; }
+.nav-item {
+    color: #888;
+    padding: 12px;
+    margin-bottom: 10px;
+    border-radius: 10px;
+    cursor: pointer;
+    transition: 0.3s;
+}
+.nav-item.active, .nav-item:hover {
+    background: #1a1a1a;
+    color: var(--accent-color);
+}
+
+/* Chat Area */
+.chat-container {
+    flex-grow: 1;
+    display: flex;
+    flex-direction: column;
+    background: transparent;
+}
+
+.chat-box {
+    flex-grow: 1;
+    padding: 30px;
+    overflow-y: auto;
+    display: flex;
+    flex-direction: column;
+    gap: 20px;
+}
+
+.message {
+    max-width: 85%;
+    padding: 15px;
+    border-radius: 15px;
+    font-size: 14px;
+    line-height: 1.5;
+    color: var(--text-main);
+}
+
+.ai-message {
+    align-self: flex-start;
+    background: var(--chat-bubble-ai);
+    border-left: 3px solid var(--accent-color);
+}
+
+.user-message {
+    align-self: flex-end;
+    background: var(--accent-color);
+    color: black;
+    font-weight: 600;
+}
+
+.input-area {
+    padding: 20px;
+    display: flex;
+    gap: 15px;
+    background: #111;
+}
+
+input {
+    flex-grow: 1;
+    background: #1a1a1a;
+    border: 1px solid #333;
+    padding: 15px;
+    border-radius: 12px;
+    color: white;
+    outline: none;
+}
+
+button {
+    background: var(--accent-color);
+    border: none;
+    width: 50px;
+    border-radius: 12px;
+    cursor: pointer;
+    font-size: 18px;
+}
+
+/* Pulse Animation for Status */
+.status-card { display: flex; align-items: center; gap: 10px; color: #555; font-size: 12px; }
+.pulse {
+    width: 8px; height: 8px; background: #00ff00; border-radius: 50%;
+    box-shadow: 0 0 10px #00ff00;
+}

@@ -1,0 +1,145 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Betopia AI | Ultra Pro Edition</title>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.2/css/all.min.css">
+    <link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@300;500;700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="/static/stylevoice.css">
+</head>
+<body>
+    <div class="bg-blur">
+        <div class="shape circle-1"></div>
+        <div class="shape circle-2"></div>
+    </div>
+
+    <div class="app-container">
+        <aside class="ultra-sidebar">
+            <div class="logo">
+                <div class="logo-inner">B</div>
+                <span>BETOPIA</span>
+            </div>
+            <div class="nav-links">
+                <div class="nav-btn active"><i class="fas fa-microchip"></i> <span>Core AI</span></div>
+                <div class="nav-btn"><i class="fas fa-layer-group"></i> <span>Insights</span></div>
+                <div class="nav-btn"><i class="fas fa-shield-halved"></i> <span>Security</span></div>
+            </div>
+            <div class="user-badge">
+                <img src="https://api.dicebear.com/7.x/bottts/svg?seed=Felix" alt="User">
+                <div class="user-info">
+                    <p>Alpha User</p>
+                    <span>Pro Member</span>
+                </div>
+            </div>
+        </aside>
+
+        <main class="chat-main">
+            <header class="chat-header">
+                <div class="header-left">
+                    <h2>Neural Network v3.0</h2>
+                    <p><span class="online-indicator"></span> System Synchronized</p>
+                </div>
+                <div class="header-right">
+                    <button class="icon-btn"><i class="fas fa-expand"></i></button>
+                    <button class="icon-btn"><i class="fas fa-power-off"></i></button>
+                </div>
+            </header>
+
+            <div class="chat-viewport" id="chatBox">
+                <div class="msg ai-msg">
+                    <div class="msg-bubble glass">
+                        Welcome to the Future. I am your Betopia Neural Assistant. How can I help you dominate today?
+                    </div>
+                </div>
+            </div>
+
+            <div class="input-panel">
+                <div class="input-glass-box">
+                    <div class="typing-indicator" id="loadingIndicator" style="display:none;">
+                        <span></span><span></span><span></span>
+                    </div>
+                    <input type="text" id="userInput" placeholder="Initialize command...">
+                    <div class="control-btns">
+                        <button id="voiceBtn" class="voice-trigger">
+                            <i class="fas fa-microphone"></i>
+                            <div class="pulse-ring"></div>
+                        </button>
+                        <button id="sendBtn" class="send-trigger">
+                            <i class="fas fa-bolt"></i>
+                        </button>
+                    </div>
+                </div>
+            </div>
+        </main>
+    </div>
+
+    <script>
+        const chatBox = document.getElementById('chatBox');
+        const userInput = document.getElementById('userInput');
+        const sendBtn = document.getElementById('sendBtn');
+        const voiceBtn = document.getElementById('voiceBtn');
+        const loader = document.getElementById('loadingIndicator');
+
+        function speak(text) {
+            window.speechSynthesis.cancel();
+            const utterance = new SpeechSynthesisUtterance(text);
+            utterance.lang = 'en-US';
+            utterance.rate = 1.1;
+            window.speechSynthesis.speak(utterance);
+        }
+
+        function appendMessage(sender, text) {
+            const div = document.createElement('div');
+            div.className = `msg ${sender === 'You' ? 'user-msg' : 'ai-msg'} reveal-anim`;
+            div.innerHTML = `<div class="msg-bubble glass">${text}</div>`;
+            chatBox.appendChild(div);
+            chatBox.scrollTop = chatBox.scrollHeight;
+        }
+
+        async function processQuery(query) {
+            if (!query.trim()) return;
+            appendMessage('You', query);
+            userInput.value = '';
+            loader.style.display = 'flex';
+
+            const formData = new FormData();
+            formData.append('question', query);
+
+            try {
+                const res = await fetch('/ask', { method: 'POST', body: formData });
+                const data = await res.json();
+                loader.style.display = 'none';
+                appendMessage('AI', data.answer);
+                speak(data.answer);
+            } catch (e) {
+                loader.style.display = 'none';
+                appendMessage('AI', "Critical Error: Connection Interrupted.");
+            }
+        }
+
+        // Voice Engine
+        const SpeechRecognition = window.SpeechRecognition || window.webkitSpeechRecognition;
+        if (SpeechRecognition) {
+            const rec = new SpeechRecognition();
+            rec.lang = 'en-US';
+
+            voiceBtn.addEventListener('click', () => {
+                rec.start();
+                voiceBtn.classList.add('listening');
+            });
+
+            rec.onresult = (e) => {
+                const text = e.results[0][0].transcript;
+                voiceBtn.classList.remove('listening');
+                processQuery(text);
+            };
+
+            rec.onerror = () => voiceBtn.classList.remove('listening');
+        }
+
+        sendBtn.addEventListener('click', () => processQuery(userInput.value));
+        userInput.addEventListener('keypress', (e) => { if(e.key === 'Enter') processQuery(userInput.value); });
+    </script>
+</body>
+</html>

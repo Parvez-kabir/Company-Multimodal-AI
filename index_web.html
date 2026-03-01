@@ -1,0 +1,113 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Betopia AI | Limitless Future</title>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <link rel="stylesheet" href="/static/stylevoice.css">
+</head>
+<body>
+    <div class="bg-gradient"></div>
+    
+    <div class="chat-wrapper">
+        <header class="chat-header">
+            <div class="logo-section">
+                <div class="logo-icon">B</div>
+                <div>
+                    <h1>Betopia AI</h1>
+                    <span class="status"><span class="dot"></span> Online | Voice Ready</span>
+                </div>
+            </div>
+            <button class="settings-btn"><i class="fas fa-ellipsis-v"></i></button>
+        </header>
+        
+        <div class="chat-box" id="chatBox">
+            <div class="message ai-message animate-fade">
+                Hello! I am your Betopia assistant. Ask me anything about our core beliefs or services.
+            </div>
+        </div>
+
+        <div class="input-container">
+            <div class="input-wrapper">
+                <input type="text" id="userInput" placeholder="Ask your question here...">
+                <div class="action-btns">
+                    <button id="voiceBtn" class="action-btn voice-inactive" title="Speak">
+                        <i class="fas fa-microphone"></i>
+                    </button>
+                    <button id="sendBtn" class="action-btn send-btn">
+                        <i class="fas fa-paper-plane"></i>
+                    </button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        const chatBox = document.getElementById('chatBox');
+        const userInput = document.getElementById('userInput');
+        const sendBtn = document.getElementById('sendBtn');
+        const voiceBtn = document.getElementById('voiceBtn');
+
+        function speak(text) {
+            window.speechSynthesis.cancel(); // আগের কথা থামিয়ে দেবে
+            const utterance = new SpeechSynthesisUtterance(text);
+            utterance.lang = 'en-US';
+            utterance.rate = 1.0;
+            window.speechSynthesis.speak(utterance);
+        }
+
+        function appendMessage(sender, text) {
+            const msgDiv = document.createElement('div');
+            msgDiv.className = `message ${sender === 'You' ? 'user-message' : 'ai-message'} animate-pop`;
+            msgDiv.innerHTML = text;
+            chatBox.appendChild(msgDiv);
+            chatBox.scrollTop = chatBox.scrollHeight;
+        }
+
+        async function askAI(question) {
+            if (!question.trim()) return;
+            appendMessage('You', question);
+            userInput.value = '';
+
+            const formData = new FormData();
+            formData.append('question', question);
+
+            try {
+                const response = await fetch('/ask', { method: 'POST', body: formData });
+                const data = await response.json();
+                appendMessage('AI', data.answer);
+                speak(data.answer);
+            } catch (error) {
+                appendMessage('AI', "Error connecting to server.");
+            }
+        }
+
+        // Voice Recognition
+        const SpeechRecognition = window.SpeechRecognition || window.webkitSpeechRecognition;
+        if (SpeechRecognition) {
+            const recognition = new SpeechRecognition();
+            recognition.lang = 'en-US';
+
+            voiceBtn.addEventListener('click', () => {
+                recognition.start();
+                voiceBtn.classList.replace('voice-inactive', 'voice-active');
+            });
+
+            recognition.onresult = (e) => {
+                const transcript = e.results[0][0].transcript;
+                userInput.value = transcript;
+                voiceBtn.classList.replace('voice-active', 'voice-inactive');
+                askAI(transcript);
+            };
+
+            recognition.onerror = () => {
+                voiceBtn.classList.replace('voice-active', 'voice-inactive');
+            };
+        }
+
+        sendBtn.addEventListener('click', () => askAI(userInput.value));
+        userInput.addEventListener('keypress', (e) => { if(e.key === 'Enter') askAI(userInput.value); });
+    </script>
+</body>
+</html>
